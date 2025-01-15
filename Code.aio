@@ -1,0 +1,88 @@
+#include <LiquidCrystal.h>
+
+// Configuración del LCD (20x4)
+LiquidCrystal lcd(8, 7, 6, 5, 4, 3, 2);
+
+// Constantes
+const int VC_PIN = A0; // Entrada analógica conectada al colector
+const int VB_PIN = A1; // Nueva entrada analógica conectada a la base
+const float VBE = 0.65;  // Voltaje de encendido del transistor
+const float VCC = 4.80;   // Voltaje de alimentación
+const float RC = 980.0;  // Resistencia del emisor en ohmios
+const float RB = 99600.0; // Resistencia entre base y colector en ohmios
+
+// Variables globales
+float VC, VB, VRB, VRC, IC, IB, B;
+
+void setup() {
+  pinMode(13, OUTPUT); // LED en Arduino Uno
+  Serial.begin(115200); // Configurar puerto serie
+
+  // Inicializar el LCD
+  lcd.begin(20, 4); // Configurar pantalla de 20 columnas x 4 filas
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Probador BJT NPN");
+  delay(2000); // Pausa para mostrar mensaje inicial
+  lcd.clear();
+}
+
+void loop() {
+  // Leer voltajes VC y VB desde los pines analógicos
+  VC = (analogRead(VC_PIN) * VCC) / 1023.0;
+  VB = (analogRead(VB_PIN) * VCC) / 1023.0;
+
+  // Calcular VRC, VRB, IC e IB
+  VRC = VCC - VC;          // Voltaje en RC
+  VRB = VC - VB;           // Voltaje en RB (diferencia entre VB y VC)
+  IC = VRC / RC;           // Corriente del colector (en amperios)
+  IB = VRB / RB;           // Corriente de base (en amperios)
+
+  // Calcular Beta (ganancia de corriente)
+  B = IC / IB;
+
+  // Mostrar resultados en el monitor serie
+  Serial.println("----- Medidas -----");
+  Serial.print("VC = "); Serial.println(VC, 3);
+  Serial.print("VB = "); Serial.println(VB, 3);
+  Serial.print("VRC = "); Serial.println(VRC, 3);
+  Serial.print("VRB = "); Serial.println(VRB, 3);
+  Serial.print("IC (mA) = "); Serial.println(IC * 1000, 3); // Convertir IC a mA
+  Serial.print("IB (uA) = "); Serial.println(IB * 1000000, 3); // Convertir IB a uA
+  Serial.print("Beta = "); Serial.println(B, 2);
+
+  // Mostrar información en el LCD
+  mostrarEnLCD();
+  delay(1000);
+}
+
+void mostrarEnLCD() {
+  lcd.clear();
+
+  // Línea 1: Mostrar VC y VB
+  lcd.setCursor(0, 0);
+  lcd.print("VC:");
+  lcd.print(VC, 3);
+  lcd.print(" VB:");
+  lcd.print(VB, 3);
+
+  // Línea 2: Mostrar VRC y VRB
+  lcd.setCursor(0, 1);
+  lcd.print("VRC:");
+  lcd.print(VCC - VC, 3);
+  lcd.print(" VRB:");
+  lcd.print(VRB, 3);
+
+  // Línea 3: Mostrar IC y IB
+  lcd.setCursor(0, 2);
+  lcd.print("IC:");
+  lcd.print(IC * 1000, 3); // Convertir IC a mA
+  lcd.print("mA IB:");
+  lcd.print(IB * 1000000, 2); // Convertir IB a uA
+  lcd.print("u");
+
+  // Línea 4: Mostrar Beta
+  lcd.setCursor(0, 3);
+  lcd.print("Beta:");
+  lcd.print(B, 2);
+}
