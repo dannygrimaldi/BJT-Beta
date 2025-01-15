@@ -1,4 +1,9 @@
 #include <LiquidCrystal.h>
+//UAM AZC UEA Mediciones en Ing
+//Daniel ALFREDO HDZ
+//Jose Marcelino P
+//13-Enero-2025 
+
 
 // Configuración del LCD (20x4)
 LiquidCrystal lcd(8, 7, 6, 5, 4, 3, 2);
